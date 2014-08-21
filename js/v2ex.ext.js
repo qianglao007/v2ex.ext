@@ -384,52 +384,15 @@ TopicExt.prototype.decomposeReplyContent = function (currentReply) {
     return /\/member\/(\w+)/i.test($a.attr('href'));
   }
 
-  currentReply.$content.on('click', 'a', function () {
-    var $a = $(this)
-      , username, $doc, t, index;
-    if (isAtLink($a)) {
-      username = $a.text();
-      $doc = $(document);
-      t = currentReply.$row.offset().top - $doc.scrollTop();
-      index = st.replies.indexOf(currentReply);
+  currentReply.$content.on('click', 'a', function (e) {
+    var $a = $(this),
+        replyId = $a.data('replyId');
+      window.location.hash = replyId;
+      $('#' + replyId).css('backgroundColor', 'rgb(237, 251, 253)').siblings().css('backgroundColor', '');
 
-      currentReply.$foldSign.text(UNDO);
-      eachSeries(st.replies.slice(0, index).reverse(), function (reply, complete) {
-        if (reply.username == username || reply.username == currentReply.username) {
-          reply.$foldSign.text(UNDO);
-          reply.$row.show({
-            duration: 0,
-            step: function () {
-              var top = currentReply.$row.offset().top - t;
-              $doc.scrollTop(top);
-            },
-            complete: complete
-          });
-          complete();
-        } else {
-          reply.$row.hide({
-            duration: 0,
-            step: function () {
-              var top = currentReply.$row.offset().top - t;
-              $doc.scrollTop(top);
-            },
-            complete: complete
-          });
-        }
-      }, function (err) {});
 
-      each(st.replies.slice(index + 1), function (reply, complete) {
-        if (reply.username == username || reply.username == currentReply.username) {
-          reply.$foldSign.text(UNDO);
-          reply.$row.show();
-        } else {
-          reply.$row.hide();
-        }
-        complete();
-      }, function (err) {});
+      e.preventDefault()
 
-      return false;
-    }
   });
   currentReply.$content.find('a').on({
     powerTipPreRender: function () {
@@ -443,6 +406,7 @@ TopicExt.prototype.decomposeReplyContent = function (currentReply) {
           for (var i = replies.length - 1; i >= 0; i--) {
             if (replies[i].no < currentReply.no) {
               $content = replies[i].$content;
+                $(this).data('replyId', replies[i].replyId);
               break;
             }
           }
